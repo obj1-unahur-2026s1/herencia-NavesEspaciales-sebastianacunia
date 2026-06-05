@@ -1,22 +1,20 @@
 class Nave {
     var velocidad 
-    var direccion 
-
-    method velocidad() = velocidad
-    method direccion() = direccion
+    var direccion
+    var combustible 
 
     method acelerar(cuanto) {
-        velocidad = (velocidad + cuanto).min(10)
+        velocidad = (velocidad + cuanto).min(100000)
     }
     method desacelerar(cuanto) {
-        velocidad = (velocidad - cuanto).max(-10)
+        velocidad = (velocidad - cuanto).max(0)
     }
 
     method irHaciaElSol() {
         direccion = 10
     }
     method escaparDelSol() {
-        direccion = 0
+        direccion = -10
     }
     method ponerseParaleloAlSol() {
         direccion = 0
@@ -29,12 +27,21 @@ class Nave {
         direccion -= 1
     }
 
-    method prepararViaje(cantAcelera) {
-        self.acelerar(cantAcelera)
+    method cargarCombustible(litros) {
+        combustible += litros
+    }
+    method descargarCombustible(litros) {
+        combustible -= litros
+    }
+
+    method prepararViaje() {
+        self.acelerar(5000)
+        self.cargarCombustible(30000)
     }   // metodo abstracto, es un metodo sin definir que obliga a 
         // las clases hijas a utilizarlo obligatoriamente
         // al tener Nave un metodo abstracto no puedo instanciar 
         // ningun objecto clase Nave
+    method estaTranquila() = combustible >= 4000 && velocidad < 12000
 }
 class NaveBaliza inherits Nave {
     var property color
@@ -51,10 +58,12 @@ class NaveBaliza inherits Nave {
         coloresValidos.remove(colorNuevo)
     }
 
-    override method prepararViaje(cantAcelera) {
+    override method prepararViaje() {
         self.cambiarColorDeBaliza("verde")
         self.ponerseParaleloAlSol()
+        super()
     }
+    override method estaTranquila() = super() && color <> "rojo"
 }
 class NavePasajeros inherits Nave{
     var cantidadPasajeros 
@@ -81,11 +90,13 @@ class NavePasajeros inherits Nave{
         cantidadBebidas -= cantidad
     }
 
-    override method prepararViaje(cantAcelera) {
+    override method prepararViaje() {
         self.cargarRaciones(cantidadPasajeros * 4)
         self.cargarBebidas(cantidadPasajeros * 6)
-        Nave.acercarseUnPocoAlSol()
+        self.acercarseUnPocoAlSol()
+        super()
     }
+    
 }
 // crear instancia en consola
 // const nave1 = new Nave(velocidad = 10, direccion = 10)
@@ -110,15 +121,27 @@ class NaveDeCombate inherits Nave{
     method esEscueta() = mensajesEmitidos.any({m => m.size() > 30})
     method emitioMensaje() = mensajesEmitidos.size() > 0
 
-    override method prepararViaje(cantAcelera) {
+    override method prepararViaje() {
         self.ponerseVisible()
         self.replegarMisiles()
-        Nave.acelerar(cantAcelera)
+        self.acelerar(15000)
         self.emitirMensaje("Saliendo en misión")
-        super(cantAcelera)
+        super()
     }
+    override method estaTranquila() {}
 }
 // override sobreescribe el metodo de la clase padre
 // con super se puede ejecutar el contenido del metodo en el 
 // padre escribiendo una sola linea (dicho contenido pueden ser
 // muchas lineas de codigo)
+class NaveHospital inherits NavePasajeros{
+    var estadoQuirofanos
+
+    method prepararElQuirofano() {
+        estadoQuirofanos = true
+    }
+    override method prepararViaje() {}
+}
+class NaveDeCombateSigilosas inherits NaveDeCombate {
+
+}
